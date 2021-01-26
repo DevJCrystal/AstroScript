@@ -7,6 +7,8 @@ from datetime import datetime as dt
 startTime = None
 shutterImgDir = 'ShutterButtons'
 
+stringFinder = 'findstr' if os.name == 'nt' else 'grep'
+
 # If window (nt) then cls else clear (mac / linux)
 def clear():
     _ = os.system('cls' if os.name == 'nt' else 'clear')
@@ -84,15 +86,14 @@ def AstroCapture(sX = None, sY = None):
         else:
             dt_string = lastCapture.strftime("%m/%d/%Y %H:%M:%S")
             print("  Last Capture: ", dt_string)
-        os.system("adb shell dumpsys battery | grep level")
-        os.system("adb shell dumpsys battery | grep temperature")
+        os.system(f"adb shell dumpsys battery | {stringFinder} level")
+        os.system(f"adb shell dumpsys battery | {stringFinder} temperature")
         print(f'  Current Capture Count: {count}')
         os.system("adb exec-out screencap -p > temp.png")
         os.system('mv temp.png phoneScreen.png')
 
         # Look for Astro Button
         phoneScreen = Image.open('phoneScreen.png')
-        w,h = phoneScreen.size
 
         astroLoc = None
 
