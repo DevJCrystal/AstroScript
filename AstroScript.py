@@ -8,6 +8,7 @@ startTime = None
 shutterImgDir = 'ShutterButtons'
 
 stringFinder = 'findstr' if os.name == 'nt' else 'grep'
+move = 'move' if os.name == 'nt' else 'mv'
 
 # If window (nt) then cls else clear (mac / linux)
 def clear():
@@ -73,6 +74,7 @@ def AstroCapture(sX = None, sY = None):
     count = 0
     noCap = 0
 
+    ignoreAlarm = False
     lastCapture = None
 
     astroCap = os.listdir(shutterImgDir)
@@ -90,7 +92,7 @@ def AstroCapture(sX = None, sY = None):
         os.system(f"adb shell dumpsys battery | {stringFinder} temperature")
         print(f'  Current Capture Count: {count}')
         os.system("adb exec-out screencap -p > temp.png")
-        os.system('mv temp.png phoneScreen.png')
+        os.system(f'{move} temp.png phoneScreen.png')
 
         # Look for Astro Button
         phoneScreen = Image.open('phoneScreen.png')
@@ -107,10 +109,12 @@ def AstroCapture(sX = None, sY = None):
 
         # If not null click
         if not astroLoc == None:
-            astroLocCenter = pyautogui.center(astroLoc)
-            locX, locY = astroLocCenter
-
-            os.system(f"adb shell input tap {locX} {locY}")
+            # Not needed anymore. It was fun though. 
+            #astroLocCenter = pyautogui.center(astroLoc)
+            #locX, locY = astroLocCenter
+            #os.system(f"adb shell input tap {locX} {locY}")
+            
+            os.system(f"adb shell input keyevent 25")
             lastCapture = dt.now()
             count+=1
             print('Starting capture!')
@@ -118,11 +122,13 @@ def AstroCapture(sX = None, sY = None):
             print('Not ready to capture.')
         
         if lastCapture == None:
-            noCap += 1
+            if ignoreAlarm == False:
+                noCap += 1
             if noCap == 60:
                 noCap = 0
                 input('It seems we cannot find the shutter. Please add it to the ShutterButtons directory and press enter')
                 astroCap = os.listdir(shutterImgDir)
+                ignoreAlarm = True
 
         time.sleep(1)
 
